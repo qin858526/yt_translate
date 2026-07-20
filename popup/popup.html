@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>YT Translate</title>
+</head>
+<body>
+  <div class="popup-container">
+    <header class="header">
+      <h1 class="logo">YT Translate</h1>
+      <span class="version">v1.0</span>
+    </header>
+
+    <section class="toggles">
+      <div class="toggle-row">
+        <span class="toggle-label">字幕翻译</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-subtitle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">评论翻译</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-comments" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">标题 & 简介翻译</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-title-desc" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">直播弹幕翻译</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-liveChat" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <section class="api-section">
+      <label class="api-label" for="api-key">DeepSeek API Key</label>
+      <div class="api-input-row">
+        <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+        <button id="toggle-visibility" class="icon-btn" title="显示/隐藏">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <button id="save-key" class="btn btn-primary">保存设置</button>
+    </section>
+
+    <hr class="divider">
+
+    <section class="actions">
+      <button id="clear-cache" class="btn btn-secondary">清除翻译缓存</button>
+    </section>
+
+    <footer class="footer">
+      <span id="status-text" class="status ready">就绪</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

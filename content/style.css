@@ -1,0 +1,15 @@
+﻿/* Injected translation styles for YouTube page elements */
+
+/* Bilingual comment/title/description display */
+.yt-tl-original {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.yt-tl-translated {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: inherit;
+  line-height: inherit;
+  display: inline-block;
+}
