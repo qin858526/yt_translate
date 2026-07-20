@@ -207,3 +207,54 @@ input:checked + .slider:before {
 .status.error {
   color: #f44336;
 }
+.api-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #3a2a00;
+  border: 1px solid #665200;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #ffb300;
+}
+
+.api-notice.configured {
+  background: #0a2e14;
+  border-color: #1a6630;
+  color: #4caf50;
+}
+
+.notice-icon {
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.notice-text {
+  flex: 1;
+}
+
+.api-hint {
+  font-size: 11px;
+  color: #777;
+  margin-top: 4px;
+}
+
+.api-hint a {
+  color: #4285f4;
+  text-decoration: none;
+}
+
+.api-hint a:hover {
+  text-decoration: underline;
+}
+
+.section-title {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

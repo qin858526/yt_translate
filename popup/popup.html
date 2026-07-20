@@ -13,7 +13,30 @@
       <span class="version">v1.0</span>
     </header>
 
+    <div class="api-notice" id="api-notice">
+      <span class="notice-icon">!</span>
+      <span class="notice-text">请先配置 API Key 才能使用翻译功能</span>
+    </div>
+
+    <section class="api-section">
+      <label class="api-label" for="api-key">DeepSeek API Key</label>
+      <div class="api-input-row">
+        <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+        <button id="toggle-visibility" class="icon-btn" title="显示/隐藏">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <button id="save-key" class="btn btn-primary">保存 Key</button>
+      <div class="api-hint">在 <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> 获取</div>
+    </section>
+
+    <hr class="divider">
+
     <section class="toggles">
+      <div class="section-title">翻译功能</div>
       <div class="toggle-row">
         <span class="toggle-label">字幕翻译</span>
         <label class="switch">
@@ -42,22 +65,6 @@
           <span class="slider"></span>
         </label>
       </div>
-    </section>
-
-    <hr class="divider">
-
-    <section class="api-section">
-      <label class="api-label" for="api-key">DeepSeek API Key</label>
-      <div class="api-input-row">
-        <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
-        <button id="toggle-visibility" class="icon-btn" title="显示/隐藏">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
-      </div>
-      <button id="save-key" class="btn btn-primary">保存设置</button>
     </section>
 
     <hr class="divider">

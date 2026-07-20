@@ -1,6 +1,5 @@
 ﻿/**
  * Popup UI logic for YT Translate.
- * Manages settings toggles, API key, and cache clearing.
  */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -13,6 +12,22 @@ document.addEventListener('DOMContentLoaded', function () {
   var saveBtn = document.getElementById('save-key');
   var clearCacheBtn = document.getElementById('clear-cache');
   var statusText = document.getElementById('status-text');
+  var apiNotice = document.getElementById('api-notice');
+
+  // Check API key status
+  function checkApiKey() {
+    chrome.runtime.sendMessage({ type: 'CHECK_API_KEY' }, function (response) {
+      if (response && response.configured) {
+        apiNotice.className = 'api-notice configured';
+        apiNotice.querySelector('.notice-text').textContent = 'API Key 已配置';
+        apiNotice.querySelector('.notice-icon').textContent = '\u2713';
+      } else {
+        apiNotice.className = 'api-notice';
+        apiNotice.querySelector('.notice-text').textContent = '请先配置 API Key 才能使用翻译功能';
+        apiNotice.querySelector('.notice-icon').textContent = '!';
+      }
+    });
+  }
 
   // Load saved settings
   chrome.storage.local.get(['settings', 'apiKey'], function (result) {
@@ -25,6 +40,29 @@ document.addEventListener('DOMContentLoaded', function () {
     if (result.apiKey) {
       apiKeyInput.value = result.apiKey;
     }
+    checkApiKey();
+  });
+
+  // Save API key
+  function saveApiKey() {
+    var apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      setStatus('error', '请输入 API Key');
+      return;
+    }
+    if (!apiKey.startsWith('sk-')) {
+      setStatus('error', 'Key 格式错误，应以 sk- 开头');
+      return;
+    }
+    chrome.storage.local.set({ apiKey: apiKey }, function () {
+      setStatus('saved', 'API Key 已保存');
+      checkApiKey();
+    });
+  }
+
+  saveBtn.addEventListener('click', saveApiKey);
+  apiKeyInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') saveApiKey();
   });
 
   // Save settings and notify active tab
@@ -37,15 +75,8 @@ document.addEventListener('DOMContentLoaded', function () {
       liveChat: toggleLiveChat.checked
     };
 
-    var data = { settings: settings };
-    if (apiKeyInput.value.trim()) {
-      data.apiKey = apiKeyInput.value.trim();
-    }
-
-    chrome.storage.local.set(data, function () {
+    chrome.storage.local.set({ settings: settings }, function () {
       setStatus('saved', '已保存');
-
-      // Notify active YouTube tab
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         var tab = tabs[0];
         if (tab && tab.url && tab.url.indexOf('youtube.com') !== -1) {
@@ -58,28 +89,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Toggle switches: auto-save
   [toggleSubtitle, toggleComments, toggleTitleDesc, toggleLiveChat].forEach(function (el) {
     el.addEventListener('change', saveSettings);
   });
 
-  // Save button for API key
-  saveBtn.addEventListener('click', function () {
-    var apiKey = apiKeyInput.value.trim();
-    if (apiKey) {
-      chrome.storage.local.set({ apiKey: apiKey }, function () {
-        setStatus('saved', 'API Key 已保存');
-      });
-    }
-  });
-
   // Toggle API key visibility
   toggleVisibilityBtn.addEventListener('click', function () {
-    if (apiKeyInput.type === 'password') {
-      apiKeyInput.type = 'text';
-    } else {
-      apiKeyInput.type = 'password';
-    }
+    apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
   });
 
   // Clear cache

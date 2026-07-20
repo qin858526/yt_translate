@@ -1,10 +1,9 @@
 ﻿/**
  * Background Service Worker for YT Translate.
  * Proxies DeepSeek API calls from content scripts.
- * Uses ES module syntax (import.meta is available in MV3 SW).
+ * Reads API key from chrome.storage.local (set by user in popup).
  */
 
-const API_KEY = 'sk-fb876a02ed31460a8afbc4493e03cfcb';
 const API_URL = 'https://api.deepseek.com/chat/completions';
 const MODEL = 'deepseek-v4-flash';
 
@@ -19,10 +18,35 @@ Rules:
 - If a line is already in Chinese, keep it as-is
 - For short UI text or titles, use natural Chinese equivalents`;
 
+// Cache API key in memory to avoid repeated storage reads
+let cachedApiKey = null;
+
+/**
+ * Get API key from chrome.storage.local, with memory caching.
+ */
+async function getApiKey() {
+  if (cachedApiKey) return cachedApiKey;
+  const result = await chrome.storage.local.get(['apiKey']);
+  cachedApiKey = result.apiKey || null;
+  return cachedApiKey;
+}
+
+// Clear cache when storage changes
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.apiKey) {
+    cachedApiKey = changes.apiKey.newValue || null;
+  }
+});
+
 /**
  * Call DeepSeek API with retry logic.
  */
 async function callDeepSeek(text, retries = 3) {
+  const apiKey = await getApiKey();
+  if (!apiKey) {
+    throw new Error('API Key not configured. Please set it in the extension popup.');
+  }
+
   let lastError;
 
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -33,7 +57,7 @@ async function callDeepSeek(text, retries = 3) {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -52,6 +76,9 @@ async function callDeepSeek(text, retries = 3) {
 
       if (!response.ok) {
         const errText = await response.text().catch(() => '');
+        if (response.status === 401) {
+          throw new Error('Invalid API Key. Please check it in the extension popup.');
+        }
         throw new Error(`DeepSeek API error ${response.status}: ${errText}`);
       }
 
@@ -69,9 +96,8 @@ async function callDeepSeek(text, retries = 3) {
       if (err.name === 'AbortError') {
         lastError = new Error('DeepSeek API timeout after 15s');
       }
-      // Don't retry on abort/timeout for last attempt
       if (attempt < retries - 1) {
-        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+        const delay = Math.pow(2, attempt) * 1000;
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -89,11 +115,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return false;
     }
 
-    // Return true to indicate async response
     callDeepSeek(text)
       .then(translated => sendResponse({ translated }))
       .catch(err => sendResponse({ error: err.message }));
 
+    return true;
+  }
+
+  // Allow popup to check if API key is configured
+  if (request.type === 'CHECK_API_KEY') {
+    getApiKey().then(key => sendResponse({ configured: !!key }));
     return true;
   }
 });
