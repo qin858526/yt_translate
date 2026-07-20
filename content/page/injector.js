@@ -12,6 +12,13 @@
   injector.inject = function (element) {
     if (element.dataset.ytTranslated === 'true') return;
 
+    // Skip injected spans
+    if (element.classList.contains('yt-tl-original') ||
+        element.classList.contains('yt-tl-translated')) {
+      element.dataset.ytTranslated = 'true';
+      return;
+    }
+
     var text = (element.textContent || '').trim();
     if (!text || text.length < 2) return;
 
@@ -20,24 +27,23 @@
     translator.translate(text).then(function (translated) {
       if (!translated) return;
 
-      // Avoid duplicate injection
       if (element.dataset.ytInjectDone === 'true') return;
       element.dataset.ytInjectDone = 'true';
 
-      // If element already has YT translate markup, skip
       if (element.querySelector('.yt-tl-original')) return;
 
-      // Store original text
       var original = element.textContent.trim();
       element.innerHTML = '';
 
       var origSpan = document.createElement('span');
       origSpan.className = 'yt-tl-original';
       origSpan.textContent = original;
+      origSpan.dataset.ytTranslated = 'true';
 
       var tlSpan = document.createElement('span');
       tlSpan.className = 'yt-tl-translated';
       tlSpan.textContent = translated;
+      tlSpan.dataset.ytTranslated = 'true';
 
       element.appendChild(origSpan);
       element.appendChild(document.createElement('br'));

@@ -8,8 +8,9 @@
 }
 
 .yt-tl-translated {
-  color: rgba(255, 255, 255, 0.95);
+  color: #4da6ff;
   font-size: inherit;
   line-height: inherit;
   display: inline-block;
+  font-weight: 500;
 }
