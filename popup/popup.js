@@ -57,6 +57,16 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.local.set({ apiKey: apiKey }, function () {
       setStatus('saved', 'API Key 已保存');
       checkApiKey();
+
+      // Notify active YouTube tab to reinitialize
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        var tab = tabs[0];
+        if (tab && tab.url && tab.url.indexOf('youtube.com') !== -1) {
+          chrome.tabs.sendMessage(tab.id, { type: 'REINIT' }, function () {
+            setStatus('saved', '已保存并重新加载翻译');
+          });
+        }
+      });
     });
   }
 
