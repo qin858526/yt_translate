@@ -18,14 +18,15 @@
 
     /** Comments */
     comments: [
-      '#content-text.ytd-comment-renderer',
-      '#content.ytd-comment-renderer #content-text'
+      'ytd-comment-renderer #content-text',
+      '#content.ytd-comment-renderer #content-text',
+      'ytd-comment-thread-renderer #content-text'
     ],
 
     /** Live chat messages */
     liveChat: [
-      '#message.yt-live-chat-text-message-renderer',
-      '#message.yt-live-chat-paid-message-renderer'
+      'yt-live-chat-text-message-renderer #message',
+      'yt-live-chat-paid-message-renderer #message'
     ],
 
     /** Video chapter titles */

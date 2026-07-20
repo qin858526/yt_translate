@@ -28,17 +28,16 @@
             state.settings[key] = result.settings[key];
           }
         }
-        console.log('YT Translate: Settings loaded', JSON.stringify(state.settings), 'apiKey configured:', !!result.apiKey);
         resolve();
       });
     });
   }
 
   /**
-   * Detect if current page is a YouTube watch page.
+   * Detect if current page is a YouTube video page.
    */
   function isWatchPage() {
-    return /^\/watch/.test(location.pathname);
+    return /^\/watch/.test(location.pathname) || !!getVideoId();
   }
 
   /**
@@ -53,11 +52,9 @@
    * Initialize subtitle translation system.
    */
   function initSubtitle() {
-    console.log('YT Translate: initSubtitle called, subtitle enabled:', state.settings.subtitle);
     if (!state.settings.subtitle) return;
 
     var videoId = getVideoId();
-    console.log('YT Translate: videoId =', videoId);
     if (!videoId) return;
 
     state.videoId = videoId;
@@ -104,7 +101,6 @@
         subTranslator.translateBatch(batches[index]).then(function (batchResult) {
           Array.prototype.push.apply(allTranslations, batchResult);
           completed++;
-          console.log('YT Translate: Batch ' + completed + '/' + batches.length + ' done');
           processBatch(index + 1);
         }).catch(function (err) {
           console.warn('YT Translate: Batch ' + index + ' failed', err.message);
@@ -141,35 +137,29 @@
    * Full initialization: load settings, then init all systems.
    */
   function initialize() {
-    console.log('YT Translate: initialize called, current state.initialized =', state.initialized);
+    if (state.initialized) return;
 
     loadSettings().then(function () {
-      console.log('YT Translate: location.pathname =', location.pathname, 'isWatchPage:', isWatchPage());
       if (!isWatchPage()) {
-        console.log('YT Translate: Not a watch page, skipping subtitle init');
         return;
       }
 
       state.initialized = true;
 
-      // Wait for video element to be ready
       var retries = 0;
       function tryInitSubtitle() {
         var video = document.querySelector('video');
         if (video && video.readyState >= 1) {
-          console.log('YT Translate: Video element ready, starting subtitle init');
           initSubtitle();
         } else if (retries < 20) {
           retries++;
           setTimeout(tryInitSubtitle, 500);
         } else {
-          console.log('YT Translate: Video element not found after retries, starting anyway');
           initSubtitle();
         }
       }
       setTimeout(tryInitSubtitle, 1000);
 
-      // Initialize page translation on DOM ready
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initPageTranslation);
       } else {
@@ -190,22 +180,15 @@
 
   // --- Bootstrap ---
 
-  console.log('YT Translate: Content script loaded, starting initialization');
-  
-  // Wait a bit for the page to settle, then initialize
   setTimeout(initialize, 500);
 
-  // SPA navigation handling
   document.addEventListener('yt-navigate-finish', function () {
-    console.log('YT Translate: SPA navigation detected');
     teardown();
     setTimeout(initialize, 500);
   });
 
-  // Listen for settings updates from popup
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.type === 'SETTINGS_UPDATED') {
-      console.log('YT Translate: Settings updated from popup, reinitializing');
       teardown();
       state.settings = request.settings;
       setTimeout(initialize, 300);
@@ -218,9 +201,7 @@
         settings: state.settings
       });
     }
-    // Handle force reinit from popup save action
     if (request.type === 'REINIT') {
-      console.log('YT Translate: Forced reinit from popup');
       teardown();
       setTimeout(initialize, 300);
       sendResponse({ success: true });
