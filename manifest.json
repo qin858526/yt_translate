@@ -1,4 +1,4 @@
-﻿{
+{
   "manifest_version": 3,
   "name": "YT Translate",
   "version": "1.0.0",
@@ -15,6 +15,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
+      "all_frames": true,
       "js": [
         "lib/utils.js",
         "lib/cache.js",
@@ -28,6 +29,12 @@
       ],
       "css": ["content/style.css", "content/subtitle/overlay.css"],
       "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/subtitle/fetcher.js"],
+      "matches": ["*://*.youtube.com/*"]
     }
   ],
   "action": {

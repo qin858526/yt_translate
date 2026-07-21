@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var toggleVisibilityBtn = document.getElementById('toggle-visibility');
   var saveBtn = document.getElementById('save-key');
   var clearCacheBtn = document.getElementById('clear-cache');
+  var refreshBtn = document.getElementById('refresh-translation');
   var statusText = document.getElementById('status-text');
   var apiNotice = document.getElementById('api-notice');
 
@@ -106,6 +107,24 @@ document.addEventListener('DOMContentLoaded', function () {
   // Toggle API key visibility
   toggleVisibilityBtn.addEventListener('click', function () {
     apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
+  });
+
+  // Refresh translation (force reinitialize + clear cache)
+  refreshBtn.addEventListener('click', function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      var tab = tabs[0];
+      if (tab && tab.url && tab.url.indexOf('youtube.com') !== -1) {
+        // Clear cache first
+        chrome.tabs.sendMessage(tab.id, { type: 'CLEAR_CACHE' }, function () {
+          // Then force reinit
+          chrome.tabs.sendMessage(tab.id, { type: 'REINIT' }, function () {
+            setStatus('saved', '翻译已刷新');
+          });
+        });
+      } else {
+        setStatus('error', '请先打开 YouTube');
+      }
+    });
   });
 
   // Clear cache

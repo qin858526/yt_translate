@@ -12,9 +12,11 @@
   injector.inject = function (element) {
     if (element.dataset.ytTranslated === 'true') return;
 
-    // Skip injected spans
-    if (element.classList.contains('yt-tl-original') ||
-        element.classList.contains('yt-tl-translated')) {
+    // Skip if already contains our injected translation spans.
+    // Use querySelector (not classList.contains) because the classes
+    // are on child <span> elements, not on the element itself.
+    if (element.querySelector('.yt-tl-original') ||
+        element.querySelector('.yt-tl-translated')) {
       element.dataset.ytTranslated = 'true';
       return;
     }

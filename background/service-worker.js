@@ -106,6 +106,55 @@ async function callDeepSeek(text, retries = 3) {
   throw lastError || new Error('DeepSeek API call failed');
 }
 
+/**
+ * Fetch caption track list from YouTube InnerTube API.
+ * Used as a fallback when ytInitialPlayerResponse is unavailable.
+ * Kept for potential future use.
+ */
+async function fetchCaptionsForVideo(videoId) {
+  const INNERTUBE_KEY = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
+  const response = await fetch(
+    'https://www.youtube.com/youtubei/v1/player?key=' + INNERTUBE_KEY,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        videoId: videoId,
+        context: {
+          client: {
+            clientName: 'WEB',
+            clientVersion: '2.20260715.00.00',
+            hl: 'en',
+            gl: 'US'
+          }
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('InnerTube API error: HTTP ' + response.status);
+  }
+
+  const data = await response.json();
+  const tracks = data?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+
+  if (!tracks || tracks.length === 0) {
+    return { tracks: [] };
+  }
+
+  return {
+    tracks: tracks.map(function (t) {
+      return {
+        baseUrl: t.baseUrl,
+        languageCode: t.languageCode,
+        name: t.name ? (t.name.simpleText || t.languageCode) : t.languageCode,
+        kind: t.kind || ''
+      };
+    })
+  };
+}
+
 // Listen for messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'TRANSLATE') {
@@ -115,9 +164,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return false;
     }
 
+    console.log('YT Translate BG: Received TRANSLATE request, length=' + text.length);
+
     callDeepSeek(text)
-      .then(translated => sendResponse({ translated }))
-      .catch(err => sendResponse({ error: err.message }));
+      .then(translated => {
+        console.log('YT Translate BG: DeepSeek response length=' + translated.length +
+          ', preview=' + translated.substring(0, 80));
+        sendResponse({ translated });
+      })
+      .catch(err => {
+        console.error('YT Translate BG: DeepSeek error — ' + err.message);
+        sendResponse({ error: err.message });
+      });
 
     return true;
   }
@@ -125,6 +183,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Allow popup to check if API key is configured
   if (request.type === 'CHECK_API_KEY') {
     getApiKey().then(key => sendResponse({ configured: !!key }));
+    return true;
+  }
+
+  // InnerTube fallback: get caption track list for a video
+  if (request.type === 'FETCH_CAPTIONS') {
+    const videoId = request.videoId;
+    if (!videoId) {
+      sendResponse({ error: 'Missing videoId' });
+      return false;
+    }
+    fetchCaptionsForVideo(videoId)
+      .then(data => sendResponse(data))
+      .catch(err => sendResponse({ error: err.message }));
     return true;
   }
 });

@@ -23,10 +23,24 @@
       'ytd-comment-thread-renderer #content-text'
     ],
 
-    /** Live chat messages */
+    /** Live chat messages (live + replay/archive mode) */
     liveChat: [
+      // 直播模式（Live）
       'yt-live-chat-text-message-renderer #message',
-      'yt-live-chat-paid-message-renderer #message'
+      'yt-live-chat-paid-message-renderer #message',
+      'yt-live-chat-message-renderer #message',
+      'yt-live-chat-viewer-engagement-message-renderer #message',
+      // 回放模式（Replay / Archive）
+      'ytd-live-chat-replay yt-live-chat-text-message-renderer #message',
+      'yt-live-chat-replay-item-renderer #message',
+      'yt-live-chat-replay-item-renderer #content',
+      // 通用兜底（不带特定标签前缀）
+      '#message.yt-live-chat-text-message-renderer',
+      '#items.yt-live-chat-item-list-renderer #message',
+      // 发言用户名
+      '#author-name.yt-live-chat-text-message-renderer',
+      'yt-live-chat-author-chip #author-name',
+      '#author-chip #author-name'
     ],
 
     /** Video chapter titles */
