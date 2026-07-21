@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YT Translate",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "YouTube 沉浸式双语翻译 — 字幕、评论、标题、简介实时翻译",
   "permissions": ["storage"],
   "host_permissions": [
